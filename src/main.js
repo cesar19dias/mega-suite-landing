@@ -3,7 +3,9 @@
  * mega-suite-landing / src/main.js
  * Lógica da Landing Page - Modais de Vídeo e Configuração de Redirecionamento
  * ==========================================================================
- *// BANCO DE DADOS DE VÍDEOS
+ */
+
+// BANCO DE DADOS DE VÍDEOS
 const VIDEO_DATABASE = {
   main: {
     title: "Mega Suite Lab",
