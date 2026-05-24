@@ -3,39 +3,52 @@
  * mega-suite-landing / src/main.js
  * Lógica da Landing Page - Modais de Vídeo e Configuração de Redirecionamento
  * ==========================================================================
- */
-
-// 1. BANCO DE DADOS DE VÍDEOS (INSIRA SEUS LINKS DE GRAVAÇÕES AQUI)
-// Você pode usar links do YouTube (formato embed), Vimeo, ou caminhos para arquivos MP4 locais
+ *// BANCO DE DADOS DE VÍDEOS
 const VIDEO_DATABASE = {
   main: {
-    title: "Apresentação do Mega Suite Lab",
-    // Substitua pelo seu link de embed do YouTube ou arquivo local:
-    // Exemplo de YouTube: "https://www.youtube.com/embed/SEU_VIDEO_ID?autoplay=1"
-    url: "" 
-  },
-  medidas: {
-    title: "Demonstração - Mega Medidas",
-    url: ""
-  },
-  letreiros: {
-    title: "Demonstração - Mega Letreiros",
-    url: ""
-  },
-  design: {
-    title: "Demonstração - Mega Design",
-    url: ""
-  },
-  fontes: {
-    title: "Demonstração - Mega Fontes",
-    url: ""
+    title: "Mega Suite Lab",
+    url: "https://www.youtube.com/embed/iu2qGCbH83g?autoplay=1"
   }
 };
 
-// 2. ELEMENTOS DO DOM
-const modal = document.getElementById('video-modal');
-const modalWrapper = modal ? modal.querySelector('.modal-video-wrapper') : null;
-const modalClose = modal ? modal.querySelector('.modal-close') : null;
+// Helper para converter URL padrão/curta do YouTube em formato de embed compatível com iframe
+function getEmbedUrl(url) {
+  if (!url) return '';
+  
+  // Se já for link de embed, retorna ele mesmo
+  if (url.includes('/embed/')) {
+    return url;
+  }
+  
+  // YouTube watch link (youtube.com/watch?v=ID)
+  if (url.includes('youtube.com/watch')) {
+    try {
+      const urlObj = new URL(url);
+      const videoId = urlObj.searchParams.get('v');
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      }
+    } catch (e) {
+      console.error("Erro ao converter URL do YouTube:", e);
+    }
+  }
+  
+  // YouTube short link (youtu.be/ID)
+  if (url.includes('youtu.be/')) {
+    const parts = url.split('youtu.be/');
+    const videoId = parts[1]?.split('?')[0];
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    }
+  }
+  
+  return url;
+}
+
+// 2. ELEMENTOS DO DOM (obtidos ao carregar a página)
+let modal = null;
+let modalWrapper = null;
+let modalTitle = null;
 
 // 3. CONTROLE DO MODAL DE VÍDEO
 function openVideoModal(videoId) {
@@ -47,13 +60,17 @@ function openVideoModal(videoId) {
   modalWrapper.innerHTML = '';
 
   if (videoInfo && videoInfo.url) {
-    // Se houver um link de vídeo configurado, renderiza o iframe ou tag de vídeo
-    const isYoutube = videoInfo.url.includes('youtube.com') || videoInfo.url.includes('youtu.be');
+    const embedUrl = getEmbedUrl(videoInfo.url);
+    const isYoutube = embedUrl.includes('youtube.com') || embedUrl.includes('youtu.be') || embedUrl.includes('/embed/');
+    
+    if (modalTitle) {
+      modalTitle.textContent = videoInfo.title;
+    }
     
     if (isYoutube) {
       modalWrapper.innerHTML = `
         <iframe 
-          src="${videoInfo.url}" 
+          src="${embedUrl}" 
           title="${videoInfo.title}" 
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
           allowfullscreen>
@@ -62,14 +79,14 @@ function openVideoModal(videoId) {
     } else {
       // Caso seja um arquivo MP4 local ou na nuvem
       modalWrapper.innerHTML = `
-        <video controls autoplay>
-          <source src="${videoInfo.url}" type="video/mp4">
+        <video controls autoplay style="width: 100%; height: 100%; object-fit: contain;">
+          <source src="${embedUrl}" type="video/mp4">
           Seu navegador não suporta a tag de vídeo.
         </video>
       `;
     }
   } else {
-    // Fallback amigável caso o usuário ainda não tenha gravado/colocado o vídeo
+    // Fallback amigável caso não haja vídeo
     modalWrapper.innerHTML = `
       <div class="modal-video-fallback" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px;">
         <span style="font-size: 48px; margin-bottom: 16px;">🎬</span>
@@ -77,17 +94,13 @@ function openVideoModal(videoId) {
           Vídeo em Desenvolvimento
         </h3>
         <p style="color: #91c0eb; font-size: 14px; max-width: 500px; line-height: 1.6;">
-          Este espaço é o placeholder para a demonstração do módulo <strong>"${videoInfo ? videoInfo.title.replace('Demonstração - ', '') : videoId}"</strong>.
-          <br><br>
-          <span style="font-size: 12px; opacity: 0.8; font-family: monospace; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
-            Para ativar, adicione o link do seu vídeo em: <code>src/main.js</code>
-          </span>
+          Este espaço é o placeholder para a demonstração do módulo <strong>"${videoInfo ? videoInfo.title : videoId}"</strong>.
         </p>
       </div>
     `;
   }
 
-  // Ativa a classe que faz a transição de opacidade e escala no CSS
+  // Ativa a transição de opacidade e escala no CSS
   modal.classList.add('active');
   document.body.style.overflow = 'hidden'; // Impede o scroll de fundo
 }
@@ -98,14 +111,22 @@ function closeVideoModal() {
   modal.classList.remove('active');
   document.body.style.overflow = ''; // Devolve o scroll de fundo
   
-  // Limpa o iframe para parar o áudio do vídeo tocando ao fundo
+  // Limpa o iframe para parar o áudio do vídeo tocando ao fundo após a transição
   setTimeout(() => {
     modalWrapper.innerHTML = '';
   }, 300);
 }
 
-// 4. ATIVAR OS EVENTOS DOS VÍDEOS
+// Expõe as funções para o escopo global (importante para chamadas do HTML como onclick)
+window.openVideoModal = openVideoModal;
+window.closeVideoModal = closeVideoModal;
+
+// 4. ATIVAR OS EVENTOS DOS VÍDEOS E OUTROS AJUSTES DE INTERAÇÃO
 document.addEventListener('DOMContentLoaded', () => {
+  // Inicializa referências do DOM após o carregamento completo do documento
+  modal = document.getElementById('videoModal');
+  modalWrapper = modal ? modal.querySelector('.modal-video-wrapper') : null;
+  modalTitle = document.getElementById('modalTitle');
   
   // Captura cliques no placeholder do vídeo principal da Hero
   const mainVideoPlaceholder = document.querySelector('.video-placeholder');
@@ -116,22 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Captura cliques nos slots de vídeos dos cards (grade de recursos)
-  const featureVideoSlots = document.querySelectorAll('.feature-video-slot');
-  featureVideoSlots.forEach(slot => {
-    slot.addEventListener('click', (e) => {
-      e.stopPropagation(); // Evita ativar ações do card em si
-      const videoId = slot.getAttribute('data-video-id');
-      if (videoId) openVideoModal(videoId);
-    });
-  });
-
-  // Fechar o modal ao clicar no botão "X"
-  if (modalClose) {
-    modalClose.addEventListener('click', closeVideoModal);
-  }
-
-  // Fechar o modal ao clicar fora da caixa do container
+  // Fechar o modal ao clicar fora da caixa do container (.modal-overlay)
   if (modal) {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
@@ -142,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Fechar o modal pressionando a tecla 'ESC'
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) {
+    if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
       closeVideoModal();
     }
   });
@@ -164,5 +170,4 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
-
 });
