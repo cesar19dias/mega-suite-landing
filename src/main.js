@@ -123,8 +123,59 @@ function closeVideoModal() {
 window.openVideoModal = openVideoModal;
 window.closeVideoModal = closeVideoModal;
 
+// ==========================================================================
+// RASTREADOR DE VISITAS PRIVADO (SUPABASE)
+// ==========================================================================
+function trackVisit() {
+  // Evitar rastrear acessos locais em desenvolvimento (pode ser ignorado para testes)
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    console.log('[Tracker] Ignorando rastreamento em ambiente de desenvolvimento local.');
+    return;
+  }
+
+  const SUPABASE_URL = 'https://gfzaqvtqjlhagorlxwdw.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmemFxdnRxamxoYWdvcmx4d2R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0NTQ5MzQsImV4cCI6MjA4MjAzMDkzNH0.6XJk1qbZDYwcfnDrurtUyExDFfRNSmoztvY7q67K5gM';
+
+  // Identificador de sessão simples para agrupar múltiplos cliques/pageviews da mesma pessoa
+  let sessionId = sessionStorage.getItem('ms_landing_session');
+  if (!sessionId) {
+    sessionId = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+    sessionStorage.setItem('ms_landing_session', sessionId);
+  }
+
+  const payload = {
+    session_id: sessionId,
+    page_path: window.location.pathname,
+    referrer: document.referrer || 'Direto',
+    user_agent: navigator.userAgent,
+    screen_width: window.innerWidth
+  };
+
+  fetch(`${SUPABASE_URL}/rest/v1/landing_page_views`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(response => {
+    if (!response.ok) {
+      console.warn('[Tracker] Erro ao enviar estatísticas para o banco.');
+    }
+  })
+  .catch(error => {
+    console.error('[Tracker] Falha na requisição de estatísticas:', error);
+  });
+}
+
 // 4. ATIVAR OS EVENTOS DOS VÍDEOS E OUTROS AJUSTES DE INTERAÇÃO
 document.addEventListener('DOMContentLoaded', () => {
+  // Dispara o rastreador de visita
+  trackVisit();
+
   // Inicializa referências do DOM após o carregamento completo do documento
   modal = document.getElementById('videoModal');
   modalWrapper = modal ? modal.querySelector('.modal-video-wrapper') : null;
