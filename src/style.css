@@ -722,7 +722,126 @@ body {
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--text-white);
-  margin-top: 4px;
+  margin-top: 40px;
+}
+
+/* 7.5. Seção de Depoimentos (Prova Social) */
+.testimonials-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border-light);
+  background: rgba(3, 10, 28, 0.4);
+  position: relative;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  margin-top: 40px;
+}
+
+.testimonial-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 280px;
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.testimonial-card::before {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  font-size: 120px;
+  font-family: var(--font-title);
+  color: rgba(255, 255, 255, 0.03);
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--bg-card-hover);
+}
+
+/* Card central em destaque */
+.testimonial-card.featured-testimonial {
+  border-color: rgba(34, 197, 94, 0.3);
+  background: linear-gradient(135deg, rgba(10, 46, 79, 0.5) 0%, rgba(6, 27, 61, 0.5) 100%);
+  box-shadow: 0 15px 30px rgba(34, 197, 94, 0.05);
+}
+
+.testimonial-card.featured-testimonial:hover {
+  border-color: var(--color-green);
+  box-shadow: 0 20px 40px rgba(34, 197, 94, 0.12);
+}
+
+.stars-row {
+  color: #fbbf24;
+  font-size: 18px;
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+}
+
+.testimonial-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-style: italic;
+  flex-grow: 1;
+}
+
+.testimonial-card:hover .testimonial-text {
+  color: #ffffff;
+}
+
+.tester-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 16px;
+}
+
+.avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #030c20;
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.tester-name {
+  font-family: var(--font-title);
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.tester-role {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-cyan);
 }
 
 /* 8. Planos */
@@ -854,6 +973,21 @@ body {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-muted);
+}
+
+.daily-price {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-green);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  padding: 3px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-top: -4px;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .pricing-header p {
